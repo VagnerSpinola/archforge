@@ -39,7 +39,10 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-archforge = ["templates/**/*.j2"]
+archforge = [
+  "templates/**/*.j2",
+  "templates/**/.env.example.j2",
+]
 
 [tool.mypy]
 python_version = "3.12"

@@ -1,4 +1,7 @@
 from pathlib import Path
+import subprocess
+import sys
+import zipfile
 
 from archforge.builders.project_builder import ProjectBuilder
 from archforge.core.models.project_config import ProjectConfig
@@ -99,3 +102,34 @@ def test_project_generator_creates_event_driven_service_files(tmp_path: Path) ->
     assert "order-created" in events_endpoint.read_text(encoding="utf-8")
     observability_readme = project_root / "README.md"
     assert "OBSERVABILITY" in observability_readme.read_text(encoding="utf-8").upper()
+
+
+def test_built_wheel_includes_hidden_env_templates(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    wheel_dir = tmp_path / "wheelhouse"
+    wheel_dir.mkdir()
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "wheel",
+            ".",
+            "--no-deps",
+            "--no-build-isolation",
+            "-w",
+            str(wheel_dir),
+        ],
+        check=True,
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+    )
+
+    wheel_path = next(wheel_dir.glob("archforge-*.whl"))
+    with zipfile.ZipFile(wheel_path) as wheel_archive:
+        wheel_entries = set(wheel_archive.namelist())
+
+    assert "archforge/templates/project/shared/.env.example.j2" in wheel_entries
+    assert "archforge/templates/fastapi/.env.example.j2" in wheel_entries
