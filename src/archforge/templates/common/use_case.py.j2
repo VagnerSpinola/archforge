@@ -1,0 +1,16 @@
+from dataclasses import dataclass
+
+
+@dataclass(slots=True, frozen=True)
+class {{ class_name }}Command:
+    name: str
+
+
+@dataclass(slots=True, frozen=True)
+class {{ class_name }}Result:
+    name: str
+
+
+class {{ class_name }}UseCase:
+    def execute(self, command: {{ class_name }}Command) -> {{ class_name }}Result:
+        return {{ class_name }}Result(name=command.name)

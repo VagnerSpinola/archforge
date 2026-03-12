@@ -1,0 +1,13 @@
+from abc import ABC, abstractmethod
+
+from domain.entities.order_created import OrderCreated
+
+
+class EventRepository(ABC):
+    @abstractmethod
+    def store(self, event: OrderCreated) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_events(self) -> list[OrderCreated]:
+        raise NotImplementedError

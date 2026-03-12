@@ -1,0 +1,13 @@
+from domain.entities.order_created import OrderCreated
+from domain.repositories.event_repository import EventRepository
+
+
+class InMemoryEventRepository(EventRepository):
+    def __init__(self, storage: list[OrderCreated]) -> None:
+        self._storage = storage
+
+    def store(self, event: OrderCreated) -> None:
+        self._storage.append(event)
+
+    def list_events(self) -> list[OrderCreated]:
+        return list(self._storage)

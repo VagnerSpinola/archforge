@@ -1,0 +1,9 @@
+from dataclasses import dataclass
+
+
+@dataclass(slots=True, frozen=True)
+class UserDTO:
+    id: str
+    email: str
+    full_name: str
+    is_active: bool

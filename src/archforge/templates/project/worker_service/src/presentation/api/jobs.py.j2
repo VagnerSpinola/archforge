@@ -1,0 +1,17 @@
+from fastapi import APIRouter, Depends
+
+from application.use_cases.run_job_batch import RunJobBatchUseCase
+from presentation.dependencies.providers import get_run_job_batch_use_case
+
+router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+
+@router.post("/run")
+def run_jobs(
+    use_case: RunJobBatchUseCase = Depends(get_run_job_batch_use_case),
+) -> dict[str, object]:
+    result = use_case.execute()
+    return {
+        "processed_jobs": result.processed_jobs,
+        "statuses": result.statuses,
+    }

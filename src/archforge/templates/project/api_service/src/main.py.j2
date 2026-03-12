@@ -1,0 +1,13 @@
+from fastapi import FastAPI
+
+from infrastructure.config.settings import get_settings
+from infrastructure.logging.logging_config import configure_logging
+from infrastructure.observability.bootstrap import configure_observability
+from presentation.api.router import api_router
+
+settings = get_settings()
+configure_logging(settings.log_level, settings.structured_logging_enabled)
+
+app = FastAPI(title=settings.app_name)
+configure_observability(app, settings)
+app.include_router(api_router)

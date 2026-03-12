@@ -1,0 +1,13 @@
+from functools import lru_cache
+
+from application.use_cases.get_user import GetUserUseCase
+from infrastructure.persistence.unit_of_work import InMemoryUnitOfWork
+
+
+@lru_cache(maxsize=1)
+def get_unit_of_work() -> InMemoryUnitOfWork:
+    return InMemoryUnitOfWork()
+
+
+def get_user_use_case() -> GetUserUseCase:
+    return GetUserUseCase(unit_of_work=get_unit_of_work())

@@ -1,0 +1,26 @@
+from dataclasses import dataclass
+
+from application.interfaces.unit_of_work import UnitOfWork
+
+
+@dataclass(slots=True, frozen=True)
+class JobBatchResult:
+    processed_jobs: int
+    statuses: list[str]
+
+
+class RunJobBatchUseCase:
+    def __init__(self, unit_of_work: UnitOfWork) -> None:
+        self._unit_of_work = unit_of_work
+
+    def execute(self) -> JobBatchResult:
+        with self._unit_of_work as unit_of_work:
+            jobs = unit_of_work.jobs.list_pending()
+            for job in jobs:
+                job.mark_completed()
+
+            unit_of_work.commit()
+            return JobBatchResult(
+                processed_jobs=len(jobs),
+                statuses=[job.status for job in jobs],
+            )

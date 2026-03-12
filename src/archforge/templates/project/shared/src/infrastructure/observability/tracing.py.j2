@@ -1,0 +1,28 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def bootstrap_tracing(app: object, settings: object) -> str:
+    if not settings.otel_enabled:
+        return 'disabled'
+
+    try:
+        from opentelemetry import trace
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+    except ImportError:
+        logger.warning(
+            'OpenTelemetry is enabled but the optional observability dependencies are not installed.'
+        )
+        return 'dependencies-missing'
+
+    service_name = settings.otel_service_name or settings.app_name
+    provider = TracerProvider(resource=Resource.create({'service.name': service_name}))
+    provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+    trace.set_tracer_provider(provider)
+    FastAPIInstrumentor.instrument_app(app)
+    logger.info('OpenTelemetry instrumentation enabled for %s', service_name)
+    return 'enabled'

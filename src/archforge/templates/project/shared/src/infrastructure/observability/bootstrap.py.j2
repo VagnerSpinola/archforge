@@ -1,0 +1,29 @@
+import logging
+
+from fastapi import FastAPI
+
+from infrastructure.observability.metrics import MetricsRegistry
+from infrastructure.observability.middleware import RequestContextMiddleware
+from infrastructure.observability.tracing import bootstrap_tracing
+
+logger = logging.getLogger(__name__)
+
+
+def configure_observability(app: FastAPI, settings: object) -> None:
+    app.state.settings = settings
+    app.state.metrics_registry = MetricsRegistry(enabled=settings.metrics_enabled)
+
+    if settings.request_id_enabled:
+        app.add_middleware(RequestContextMiddleware)
+
+    app.state.tracing_status = bootstrap_tracing(app, settings)
+    logger.info(
+        "observability configured",
+        extra={
+            "structured_logging": settings.structured_logging_enabled,
+            "request_id_enabled": settings.request_id_enabled,
+            "readiness_enabled": settings.readiness_enabled,
+            "metrics_enabled": settings.metrics_enabled,
+            "otel_enabled": settings.otel_enabled,
+        },
+    )

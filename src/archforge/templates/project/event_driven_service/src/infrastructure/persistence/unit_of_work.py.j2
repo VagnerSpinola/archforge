@@ -1,0 +1,24 @@
+from __future__ import annotations
+
+from application.interfaces.unit_of_work import UnitOfWork
+from domain.entities.order_created import OrderCreated
+from infrastructure.repositories.in_memory_event_repository import InMemoryEventRepository
+
+
+class InMemoryUnitOfWork(UnitOfWork):
+    def __init__(self) -> None:
+        self._events: list[OrderCreated] = []
+        self.events = InMemoryEventRepository(self._events)
+
+    def __enter__(self) -> "InMemoryUnitOfWork":
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        if exc is not None:
+            self.rollback()
+
+    def commit(self) -> None:
+        return None
+
+    def rollback(self) -> None:
+        return None

@@ -1,0 +1,33 @@
+from time import perf_counter
+from uuid import uuid4
+
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from infrastructure.observability.request_context import clear_request_id, set_request_id
+
+
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: object) -> object:
+        request_id = request.headers.get('X-Request-ID', str(uuid4()))
+        token = set_request_id(request_id)
+        request.state.request_id = request_id
+        started_at = perf_counter()
+
+        try:
+            response = await call_next(request)
+        finally:
+            clear_request_id(token)
+
+        response.headers['X-Request-ID'] = request_id
+        response.headers['X-Response-Time'] = f'{perf_counter() - started_at:.6f}'
+
+        metrics_registry = getattr(request.app.state, 'metrics_registry', None)
+        if metrics_registry is not None:
+            metrics_registry.record_request(
+                method=request.method,
+                path=request.url.path,
+                status_code=response.status_code,
+            )
+
+        return response

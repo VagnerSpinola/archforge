@@ -1,0 +1,20 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+from domain.entities.{{ module_name }} import {{ class_name }}
+from domain.repositories.{{ module_name }}_repository import {{ class_name }}Repository
+
+
+class InMemory{{ class_name }}Repository({{ class_name }}Repository):
+    def __init__(self) -> None:
+        self._storage: dict[UUID, {{ class_name }}] = {}
+
+    def add(self, entity: {{ class_name }}) -> None:
+        self._storage[entity.id] = entity
+
+    def get_by_id(self, entity_id: UUID) -> {{ class_name }} | None:
+        return self._storage.get(entity_id)
+
+    def list(self) -> list[{{ class_name }}]:
+        return list(self._storage.values())

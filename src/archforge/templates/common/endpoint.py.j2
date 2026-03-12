@@ -1,0 +1,10 @@
+from fastapi import APIRouter
+
+from presentation.schemas.{{ module_name }} import {{ class_name }}Response
+
+router = APIRouter(prefix="/{{ route_name }}", tags=["{{ collection_name }}"])
+
+
+@router.get("/", response_model=list[{{ class_name }}Response])
+def list_{{ collection_name }}() -> list[{{ class_name }}Response]:
+    return []

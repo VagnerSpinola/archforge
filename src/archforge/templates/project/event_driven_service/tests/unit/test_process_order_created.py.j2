@@ -1,0 +1,18 @@
+from application.use_cases.process_order_created import (
+    ProcessOrderCreatedCommand,
+    ProcessOrderCreatedUseCase,
+)
+from infrastructure.persistence.unit_of_work import InMemoryUnitOfWork
+
+
+def test_process_order_created_returns_accepted_status() -> None:
+    result = ProcessOrderCreatedUseCase(unit_of_work=InMemoryUnitOfWork()).execute(
+        ProcessOrderCreatedCommand(
+            order_id="order-123",
+            customer_id="customer-456",
+            total_amount=149.9,
+        )
+    )
+
+    assert result.order_id == "order-123"
+    assert result.status == "accepted"

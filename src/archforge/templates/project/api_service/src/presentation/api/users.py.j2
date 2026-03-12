@@ -1,0 +1,19 @@
+from dataclasses import asdict
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from application.use_cases.get_user import GetUserQuery, GetUserUseCase
+from presentation.dependencies.providers import get_user_use_case
+from presentation.schemas.user import UserResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/{user_id}", response_model=UserResponse)
+def get_user(user_id: UUID, use_case: GetUserUseCase = Depends(get_user_use_case)) -> UserResponse:
+    result = use_case.execute(GetUserQuery(user_id=user_id))
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return UserResponse.model_validate(asdict(result))

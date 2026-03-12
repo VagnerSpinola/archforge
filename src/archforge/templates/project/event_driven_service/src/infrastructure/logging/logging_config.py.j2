@@ -1,0 +1,46 @@
+import json
+import logging
+from datetime import UTC, datetime
+from logging.config import dictConfig
+
+from infrastructure.observability.request_context import get_request_id
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        payload = {
+            'timestamp': datetime.now(UTC).isoformat(),
+            'level': record.levelname,
+            'logger': record.name,
+            'message': record.getMessage(),
+            'request_id': get_request_id(),
+        }
+        if record.exc_info is not None:
+            payload['exception'] = self.formatException(record.exc_info)
+        return json.dumps(payload)
+
+
+def configure_logging(log_level: str, structured_logging_enabled: bool) -> None:
+    formatter_name = 'json' if structured_logging_enabled else 'standard'
+    dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "json": {
+                    '()': JsonFormatter,
+                },
+                "standard": {
+                    "format": "%(asctime)s %(levelname)s [%(name)s] %(message)s",
+                }
+            },
+            "handlers": {
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "formatter": formatter_name,
+                    "level": log_level,
+                }
+            },
+            "root": {"handlers": ["console"], "level": log_level},
+        }
+    )

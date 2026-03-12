@@ -1,0 +1,12 @@
+from uuid import uuid4
+
+from application.use_cases.get_user import GetUserQuery, GetUserUseCase
+from infrastructure.persistence.unit_of_work import InMemoryUnitOfWork
+
+
+def test_get_user_returns_none_when_user_is_missing() -> None:
+    use_case = GetUserUseCase(unit_of_work=InMemoryUnitOfWork())
+
+    result = use_case.execute(GetUserQuery(user_id=uuid4()))
+
+    assert result is None

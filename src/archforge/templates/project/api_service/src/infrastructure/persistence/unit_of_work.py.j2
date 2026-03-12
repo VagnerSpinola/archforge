@@ -1,0 +1,27 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+from application.interfaces.unit_of_work import UnitOfWork
+from domain.entities.user import User
+from infrastructure.repositories.in_memory_user_repository import InMemoryUserRepository
+
+
+class InMemoryUnitOfWork(UnitOfWork):
+    def __init__(self) -> None:
+        sample_user = User(email="jane.doe@example.com", full_name="Jane Doe")
+        self._users: dict[UUID, User] = {sample_user.id: sample_user}
+        self.users = InMemoryUserRepository(self._users)
+
+    def __enter__(self) -> "InMemoryUnitOfWork":
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        if exc is not None:
+            self.rollback()
+
+    def commit(self) -> None:
+        return None
+
+    def rollback(self) -> None:
+        return None

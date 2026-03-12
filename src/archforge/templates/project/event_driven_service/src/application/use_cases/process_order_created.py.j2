@@ -1,0 +1,41 @@
+from dataclasses import dataclass
+from uuid import uuid5, NAMESPACE_URL
+
+from application.interfaces.unit_of_work import UnitOfWork
+from domain.entities.order_created import OrderCreated
+
+
+@dataclass(slots=True, frozen=True)
+class ProcessOrderCreatedCommand:
+    order_id: str
+    customer_id: str
+    total_amount: float
+
+
+@dataclass(slots=True, frozen=True)
+class ProcessOrderCreatedResult:
+    order_id: str
+    shipment_id: str
+    status: str
+
+
+class ProcessOrderCreatedUseCase:
+    def __init__(self, unit_of_work: UnitOfWork) -> None:
+        self._unit_of_work = unit_of_work
+
+    def execute(self, command: ProcessOrderCreatedCommand) -> ProcessOrderCreatedResult:
+        event = OrderCreated(
+            order_id=command.order_id,
+            customer_id=command.customer_id,
+            total_amount=command.total_amount,
+        )
+        with self._unit_of_work as unit_of_work:
+            unit_of_work.events.store(event)
+            unit_of_work.commit()
+
+        shipment_id = str(uuid5(NAMESPACE_URL, command.order_id))
+        return ProcessOrderCreatedResult(
+            order_id=command.order_id,
+            shipment_id=shipment_id,
+            status="accepted",
+        )

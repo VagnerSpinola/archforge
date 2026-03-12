@@ -1,0 +1,16 @@
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
+
+
+@dataclass(slots=True)
+class Job:
+    name: str
+    payload: dict[str, str]
+    id: UUID = field(default_factory=uuid4)
+    status: str = "pending"
+    processed_at: datetime | None = None
+
+    def mark_completed(self) -> None:
+        self.status = "completed"
+        self.processed_at = datetime.now(UTC)

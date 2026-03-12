@@ -1,0 +1,1 @@
+"""Bundled templates for project generation."""

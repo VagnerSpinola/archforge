@@ -1,0 +1,32 @@
+from collections import Counter
+from dataclasses import dataclass, field
+from threading import Lock
+
+
+@dataclass(slots=True)
+class MetricsRegistry:
+    enabled: bool
+    _requests: Counter[str] = field(default_factory=Counter)
+    _lock: object = field(default_factory=Lock)
+
+    def record_request(self, method: str, path: str, status_code: int) -> None:
+        if not self.enabled:
+            return
+
+        key = f'{method.lower()}:{path}:{status_code}'
+        with self._lock:
+            self._requests[key] += 1
+
+    def render(self) -> str:
+        lines = [
+            '# HELP http_requests_total Total HTTP requests handled by the service.',
+            '# TYPE http_requests_total counter',
+        ]
+        for key, value in sorted(self._requests.items()):
+            method, path, status_code = key.split(':', maxsplit=2)
+            lines.append(
+                'http_requests_total{'
+                f'method="{method}",path="{path}",status_code="{status_code}"'
+                f'}} {value}'
+            )
+        return '\n'.join(lines) + '\n'

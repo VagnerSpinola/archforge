@@ -1,0 +1,19 @@
+from fastapi import APIRouter, HTTPException, Request, status
+
+router = APIRouter(tags=['operations'])
+
+
+@router.get('/readiness')
+def readiness(request: Request) -> dict[str, object]:
+    settings = request.app.state.settings
+    if not settings.readiness_enabled:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Readiness endpoint disabled')
+
+    return {
+        'status': 'ready',
+        'checks': {
+            'request_id_middleware': 'enabled' if settings.request_id_enabled else 'disabled',
+            'metrics': 'enabled' if settings.metrics_enabled else 'disabled',
+            'tracing': getattr(request.app.state, 'tracing_status', 'disabled'),
+        },
+    }

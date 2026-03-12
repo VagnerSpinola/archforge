@@ -1,0 +1,51 @@
+# {{ project_name }}
+
+{% if project_template == "api-service" %}{{ service_title }} exposes HTTP endpoints for application use cases and health checks.{% elif project_template == "worker-service" %}{{ service_title }} runs queued background jobs behind a small operational API for health and manual execution.{% else %}{{ service_title }} receives domain events, processes them through application handlers, and exposes operational endpoints for health and event intake.{% endif %}
+
+## Template
+
+- template: {{ project_template }}
+- framework: {{ framework }}
+- database: {{ database_strategy }}
+
+## Structure
+
+```text
+src/
+  domain/
+  application/
+  infrastructure/
+  presentation/
+tests/
+  unit/
+  integration/
+  e2e/
+```
+
+## Development
+
+```bash
+python -m venv .venv
+pip install -e .[dev]
+uvicorn main:app --app-dir src --reload
+```
+
+## Observability Flags
+
+- `STRUCTURED_LOGGING_ENABLED`: emit JSON-formatted logs with request context.
+- `REQUEST_ID_ENABLED`: attach correlation IDs to requests and response headers.
+- `READINESS_ENABLED`: expose `/api/v1/readiness` for readiness probes.
+- `METRICS_ENABLED`: expose `/api/v1/metrics` with request counters.
+- `OTEL_ENABLED`: bootstrap OpenTelemetry instrumentation when the optional dependencies are installed.
+
+Install OpenTelemetry dependencies only when needed:
+
+```bash
+pip install -e .[observability]
+```
+
+## Test Suite
+
+```bash
+pytest
+```

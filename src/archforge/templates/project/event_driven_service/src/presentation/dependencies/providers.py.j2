@@ -1,0 +1,13 @@
+from functools import lru_cache
+
+from application.use_cases.process_order_created import ProcessOrderCreatedUseCase
+from infrastructure.persistence.unit_of_work import InMemoryUnitOfWork
+
+
+@lru_cache(maxsize=1)
+def get_unit_of_work() -> InMemoryUnitOfWork:
+    return InMemoryUnitOfWork()
+
+
+def get_process_order_created_use_case() -> ProcessOrderCreatedUseCase:
+    return ProcessOrderCreatedUseCase(unit_of_work=get_unit_of_work())

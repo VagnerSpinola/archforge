@@ -1,0 +1,29 @@
+from fastapi import APIRouter, Depends, status
+
+from application.use_cases.process_order_created import (
+    ProcessOrderCreatedCommand,
+    ProcessOrderCreatedUseCase,
+)
+from presentation.dependencies.providers import get_process_order_created_use_case
+from presentation.schemas.order_created import OrderCreatedRequest
+
+router = APIRouter(prefix="/events", tags=["events"])
+
+
+@router.post("/order-created", status_code=status.HTTP_202_ACCEPTED)
+def consume_order_created(
+    request: OrderCreatedRequest,
+    use_case: ProcessOrderCreatedUseCase = Depends(get_process_order_created_use_case),
+) -> dict[str, str]:
+    result = use_case.execute(
+        ProcessOrderCreatedCommand(
+            order_id=request.order_id,
+            customer_id=request.customer_id,
+            total_amount=request.total_amount,
+        )
+    )
+    return {
+        "order_id": result.order_id,
+        "shipment_id": result.shipment_id,
+        "status": result.status,
+    }

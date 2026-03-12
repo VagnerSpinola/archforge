@@ -1,0 +1,25 @@
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+
+from domain.repositories.job_repository import JobRepository
+
+
+class UnitOfWork(ABC):
+    jobs: JobRepository
+
+    @abstractmethod
+    def __enter__(self) -> "UnitOfWork":
+        raise NotImplementedError
+
+    @abstractmethod
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def commit(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def rollback(self) -> None:
+        raise NotImplementedError
